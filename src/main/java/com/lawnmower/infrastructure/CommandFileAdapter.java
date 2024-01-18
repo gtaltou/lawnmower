@@ -2,6 +2,9 @@ package com.lawnmower.infrastructure;
 
 import com.lawnmower.domain.*;
 import com.lawnmower.application.CommandProvider;
+import org.apache.logging.log4j.LogManager;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -10,16 +13,26 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
+
+
 public class CommandFileAdapter implements CommandProvider {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CommandFileAdapter.class);
+    private static final org.apache.logging.log4j.Logger logger = LogManager.getLogger(CommandFileAdapter.class);
     @Override
     public List<Command> buildCommand() {
         BufferedReader reader = null;
         List<Command> commands = new ArrayList<>();
+
         try {
             reader = new BufferedReader(new FileReader("src/main/resources/input_lawnmower.txt"));
             String line = reader.readLine();
-            if (line == null) throw new UnsupportedOperationException("The file is empty.");
+            if (line == null) {
+                String emptyFile = "The file is empty.";
+                LOGGER.info(emptyFile);
+                throw new UnsupportedOperationException(emptyFile);
+
+            }
             Scanner lineScan = new Scanner(line);
             int max_x = lineScan.nextInt();
             int max_y = lineScan.nextInt();
@@ -40,7 +53,9 @@ public class CommandFileAdapter implements CommandProvider {
                     }
                     command.setCommands(instructions);
                 } else {
-                    throw new UnsupportedOperationException("mower commands are missing");
+                    String missingCommands = "missing mower commands ";
+                    LOGGER.info(missingCommands);
+                    throw new UnsupportedOperationException(missingCommands);
                 }
                 commands.add(command);
                 line = reader.readLine();
@@ -48,11 +63,15 @@ public class CommandFileAdapter implements CommandProvider {
 
         } catch (IOException e) {
            e.printStackTrace();
+            String readingError = "error reading file.";
+            LOGGER.info(readingError);
 
         } finally {
             try {
                 if (reader != null) {
                     reader.close();
+                    String fileClosed = "The file was closed after reading.";
+                    LOGGER.info(fileClosed);
                 }
             } catch (IOException e) {
                 e.printStackTrace();
